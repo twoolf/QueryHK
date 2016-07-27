@@ -28,7 +28,12 @@ To enable code sharing between iOS App and WatchKit Extension for HealthKit quer
   s.source           = { :git => 'https://github.com/twoolf/QueryHK.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '8.0'
+#  s.ios.deployment_target = '8.0' 
+ s.platforms  = {
+    :osx => '10.10',
+    :ios => '8.0',
+    :watchos => '2.0'
+  }
 
   s.source_files = 'QueryHK/Classes/**/*'
   
