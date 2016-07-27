@@ -1,6 +1,6 @@
 import HealthKit
 
-public class QueryHK: NSObject, WCSessionDelegate {
+public class QueryHK: NSObject {
 
 var healthKitStore: HKHealthStore = HKHealthStore()
 public static let sharedManager = QueryHK()
@@ -39,5 +39,58 @@ public static let sharedManager = QueryHK()
     {
         saveWorkout(startDate, endDate: endDate, activityType: HKWorkoutActivityType.PreparationAndRecovery, distance: distance, distanceUnit: distanceUnit, kiloCalories: kiloCalories, metadata: metadata, completion: completion)
     }
+
+        public func updateWeight()
+        {
+            let sampleType = HKSampleType.quantityTypeForIdentifier (HKQuantityTypeIdentifierBodyMass)
+            
+            readMostRecentSample(sampleType!, completion: { (mostRecentWeight, error) -> Void in
+                
+                if( error != nil )
+                {
+                    print("Error reading weight from HealthKit Store: \(error.localizedDescription)")
+                    return;
+                }
+                
+                //                var weightLocalizedString = self.kUnknownString;
+                self.weightHK = mostRecentWeight as? HKQuantitySample;
+                if let kilograms = self.weightHK?.quantity.doubleValueForUnit(HKUnit.gramUnitWithMetricPrefix(.Kilo)) {
+                    let weightFormatter = NSMassFormatter()
+                    weightFormatter.forPersonMassUse = true;
+                    self.weightLocalizedString = weightFormatter.stringFromKilograms(kilograms)
+                }
+                
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    updateBMI()
+                    print("in weight update of interface controller: \(self.weightLocalizedString)")
+                });
+            });
+        }
+
+        public func updateHeight()
+        {
+            let sampleType = HKSampleType.quantityTypeForIdentifier(HKQuantityTypeIdentifierHeight)
+            readMostRecentSample(sampleType!, completion: { (mostRecentHeight, error) -> Void in
+                
+                if( error != nil )
+                {
+                    print("Error reading height from HealthKit Store: \(error.localizedDescription)")
+                    return;
+                }
+                
+                //                var heightLocalizedString = self.kUnknownString;
+                self.heightHK = mostRecentHeight as? HKQuantitySample;
+                if let meters = self.heightHK?.quantity.doubleValueForUnit(HKUnit.meterUnit()) {
+                    let heightFormatter = NSLengthFormatter()
+                    heightFormatter.forPersonHeightUse = true;
+                    self.heightLocalizedString = heightFormatter.stringFromMeters(meters);
+                }
+                
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    print("in height update of interface controller: \(self.heightLocalizedString)")
+                    updateBMI()
+                });
+            })
+        }
 
 }
