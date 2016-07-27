@@ -1,6 +1,9 @@
 import HealthKit
 
+public class QueryHK: NSObject, WCSessionDelegate {
+
 var healthKitStore: HKHealthStore = HKHealthStore()
+public static let sharedManager = QueryHK()
 
     public func saveWorkout(startDate: NSDate, endDate: NSDate, activityType: HKWorkoutActivityType, distance: Double, distanceUnit: HKUnit, kiloCalories: Double, metadata:NSDictionary, completion: ( (Bool, NSError!) -> Void)!)
     {
@@ -36,3 +39,5 @@ var healthKitStore: HKHealthStore = HKHealthStore()
     {
         saveWorkout(startDate, endDate: endDate, activityType: HKWorkoutActivityType.PreparationAndRecovery, distance: distance, distanceUnit: distanceUnit, kiloCalories: kiloCalories, metadata: metadata, completion: completion)
     }
+
+}
