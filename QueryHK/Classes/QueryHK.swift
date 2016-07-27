@@ -1,6 +1,6 @@
 import HealthKit
 
-lazy var healthKitStore: HKHealthStore = HKHealthStore()
+var healthKitStore: HKHealthStore = HKHealthStore()
 
     public func saveWorkout(startDate: NSDate, endDate: NSDate, activityType: HKWorkoutActivityType, distance: Double, distanceUnit: HKUnit, kiloCalories: Double, metadata:NSDictionary, completion: ( (Bool, NSError!) -> Void)!)
     {
