@@ -1,0 +1,16 @@
+PODS:
+  - QueryHK (0.1.0)
+
+DEPENDENCIES:
+  - QueryHK (from `../`)
+
+EXTERNAL SOURCES:
+  QueryHK:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  QueryHK: 4c3b7c909ad800df5f49af065d5975db65ddeb4c
+
+PODFILE CHECKSUM: 8dccf48d09194076eb417e6ae43baed540ba436a
+
+COCOAPODS: 1.0.1
