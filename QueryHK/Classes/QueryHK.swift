@@ -1,8 +1,10 @@
 import HealthKit
 
+lazy var healthKitStore: HKHealthStore = HKHealthStore()
+
     public func saveWorkout(startDate: NSDate, endDate: NSDate, activityType: HKWorkoutActivityType, distance: Double, distanceUnit: HKUnit, kiloCalories: Double, metadata:NSDictionary, completion: ( (Bool, NSError!) -> Void)!)
     {
-        log.debug("Saving workout \(startDate) \(endDate)")
+//        log.debug("Saving workout \(startDate) \(endDate)")
 
         let distanceQuantity = HKQuantity(unit: distanceUnit, doubleValue: distance)
         let caloriesQuantity = HKQuantity(unit: HKUnit.kilocalorieUnit(), doubleValue: kiloCalories)
