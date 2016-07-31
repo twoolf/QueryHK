@@ -1,7 +1,7 @@
 import HealthKit
 import Foundation
 import SwiftDate
-import SwiftyBeaver
+import CocoaLumberjack 
 
 public enum CircadianEvent {
     case Meal
