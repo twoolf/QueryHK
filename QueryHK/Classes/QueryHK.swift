@@ -1,7 +1,76 @@
 import HealthKit
 import Foundation
 import SwiftDate
-import CocoaLumberjack 
+//import CocoaLumberjack
+
+public enum LoggerMessageType: Int {
+    case debug = 1
+    case verbose = 2
+    case info = 3
+    case warning = 4
+    case error = 5
+}
+
+extension LoggerMessageType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .verbose:
+            return "VERBOSE"
+        case .info:
+            return "INFO"
+        case .debug:
+            return "DEBUG"
+        case .warning:
+            return "WARNING"
+        case .error:
+            return "ERROR"
+        }
+    }
+}
+
+public protocol Logger {
+    
+    func log(_ type: LoggerMessageType, msg: String,
+               functionName: String, lineNum: Int, fileName: String )
+    
+}
+
+public class Log {
+    
+    public static var logger: Logger?
+    
+    
+    public static func verbose(_ msg: String, functionName: String = #function,
+                                 lineNum: Int = #line, fileName: String = #file ) {
+        logger?.log( .verbose, msg: msg,
+                     functionName: functionName, lineNum: lineNum, fileName: fileName)
+    }
+    
+    public class func info(_ msg: String, functionName: String = #function,
+                             lineNum: Int = #line, fileName: String = #file) {
+        logger?.log( .info, msg: msg,
+                     functionName: functionName, lineNum: lineNum, fileName: fileName)
+    }
+    
+    public class func warning(_ msg: String, functionName: String = #function,
+                                lineNum: Int = #line, fileName: String = #file) {
+        logger?.log( .warning, msg: msg,
+                     functionName: functionName, lineNum: lineNum, fileName: fileName)
+    }
+    
+    public class func error(_ msg: String, functionName: String = #function,
+                              lineNum: Int = #line, fileName: String = #file) {
+        logger?.log( .error, msg: msg,
+                     functionName: functionName, lineNum: lineNum, fileName: fileName)
+    }
+    
+    public class func debug(_ msg: String, functionName: String = #function,
+                              lineNum: Int = #line, fileName: String = #file) {
+        logger?.log( .debug, msg: msg,
+                     functionName: functionName, lineNum: lineNum, fileName: fileName)
+    }
+}
+
 
 public enum CircadianEvent {
     case Meal
@@ -161,7 +230,7 @@ public struct MCAggregateSample : MCSample {
                     incrOp(sample)
                     
                 default:
-                    log.error("Cannot aggregate \(hkType)")
+                    Log.error("Cannot aggregate \(hkType)")
                 }
                 
             case is HKCorrelationType:
@@ -170,7 +239,7 @@ public struct MCAggregateSample : MCSample {
                     incrOp(sample)
                     
                 default:
-                    AppDelegate.log.error("Cannot aggregate \(hkType)")
+                   Log.error("Cannot aggregate \(hkType)")
                 }
                 
             case is HKWorkoutType:
@@ -180,7 +249,7 @@ public struct MCAggregateSample : MCSample {
                 incrOp(sample)
                 
             default:
-                AppDelegate.log.error("Cannot aggregate \(hkType)")
+                Log.error("Cannot aggregate \(hkType)")
             }
             
         } else {
@@ -250,14 +319,14 @@ public extension MCAggregateSample {
         }
         
         required public init?(coder aDecoder: NSCoder) {
-            guard let startDate    = aDecoder.decodeObjectForKey("startDate")    as? NSDate         else { LOG.error("Failed to rebuild MCAggregateSample startDate"); aggregate = nil; super.init(); return nil }
-            guard let endDate      = aDecoder.decodeObjectForKey("endDate")      as? NSDate         else { LOG.error("Failed to rebuild MCAggregateSample endDate"); aggregate = nil; super.init(); return nil }
-            guard let numeralValue = aDecoder.decodeObjectForKey("numeralValue") as? Double?        else { log.error("Failed to rebuild MCAggregateSample numeralValue"); aggregate = nil; super.init(); return nil }
-            guard let defaultUnit  = aDecoder.decodeObjectForKey("defaultUnit")  as? HKUnit?        else { log.error("Failed to rebuild MCAggregateSample defaultUnit"); aggregate = nil; super.init(); return nil }
-            guard let hkType       = aDecoder.decodeObjectForKey("hkType")       as? HKSampleType?  else { log.error("Failed to rebuild MCAggregateSample hkType"); aggregate = nil; super.init(); return nil }
-            guard let aggOp        = aDecoder.decodeObjectForKey("aggOp")        as? UInt           else { log.error("Failed to rebuild MCAggregateSample aggOp"); aggregate = nil; super.init(); return nil }
-            guard let runningAgg   = aDecoder.decodeObjectForKey("runningAgg")   as? [Double]       else { log.error("Failed to rebuild MCAggregateSample runningAgg"); aggregate = nil; super.init(); return nil }
-            guard let runningCnt   = aDecoder.decodeObjectForKey("runningCnt")   as? Int            else { log.error("Failed to rebuild MCAggregateSample runningCnt"); aggregate = nil; super.init(); return nil }
+            guard let startDate    = aDecoder.decodeObjectForKey("startDate")    as? NSDate         else { Log.error("Failed to rebuild MCAggregateSample startDate"); aggregate = nil; super.init(); return nil }
+            guard let endDate      = aDecoder.decodeObjectForKey("endDate")      as? NSDate         else { Log.error("Failed to rebuild MCAggregateSample endDate"); aggregate = nil; super.init(); return nil }
+            guard let numeralValue = aDecoder.decodeObjectForKey("numeralValue") as? Double?        else { Log.error("Failed to rebuild MCAggregateSample numeralValue"); aggregate = nil; super.init(); return nil }
+            guard let defaultUnit  = aDecoder.decodeObjectForKey("defaultUnit")  as? HKUnit?        else { Log.error("Failed to rebuild MCAggregateSample defaultUnit"); aggregate = nil; super.init(); return nil }
+            guard let hkType       = aDecoder.decodeObjectForKey("hkType")       as? HKSampleType?  else { Log.error("Failed to rebuild MCAggregateSample hkType"); aggregate = nil; super.init(); return nil }
+            guard let aggOp        = aDecoder.decodeObjectForKey("aggOp")        as? UInt           else { Log.error("Failed to rebuild MCAggregateSample aggOp"); aggregate = nil; super.init(); return nil }
+            guard let runningAgg   = aDecoder.decodeObjectForKey("runningAgg")   as? [Double]       else { Log.error("Failed to rebuild MCAggregateSample runningAgg"); aggregate = nil; super.init(); return nil }
+            guard let runningCnt   = aDecoder.decodeObjectForKey("runningCnt")   as? Int            else { Log.error("Failed to rebuild MCAggregateSample runningCnt"); aggregate = nil; super.init(); return nil }
             
             aggregate = MCAggregateSample(startDate: startDate, endDate: endDate, numeralValue: numeralValue, defaultUnit: defaultUnit,
                                           hkType: hkType, aggOp: HKStatisticsOptions(rawValue: aggOp), runningAgg: runningAgg, runningCnt: runningCnt)
@@ -463,8 +532,8 @@ public extension HKSampleType {
         case HKQuantityTypeIdentifierDietarySugar:
             return HKUnit.gramUnit()
             
-        case HKQuantityTypeIdentifierDietaryWater:
-            return HKUnit.literUnitWithMetricPrefix(HKMetricPrefix.Milli)
+//        case HKQuantityTypeIdentifierDietaryWater:
+//            return HKUnit.literUnitWithMetricPrefix(HKMetricPrefix.Milli)
             
         case HKQuantityTypeIdentifierDistanceWalkingRunning:
             return HKUnit.mileUnit()
@@ -478,8 +547,8 @@ public extension HKSampleType {
         case HKQuantityTypeIdentifierStepCount:
             return HKUnit.countUnit()
             
-        case HKQuantityTypeIdentifierUVExposure:
-            return HKUnit.countUnit()
+//        case HKQuantityTypeIdentifierUVExposure:
+//            return HKUnit.countUnit()
             
         case HKWorkoutTypeIdentifier:
             return HKUnit.hourUnit()
@@ -535,14 +604,14 @@ public extension HKSample {
 }
 
 // Readable type description.
-public extension HKSampleType {
+/*public extension HKSampleType {
     public var displayText: String? {
         switch identifier {
         case HKCategoryTypeIdentifierSleepAnalysis:
             return NSLocalizedString("Sleep", comment: "HealthKit data type")
             
-        case HKCategoryTypeIdentifierAppleStandHour:
-            return NSLocalizedString("Hours Standing", comment: "HealthKit data type")
+//        case HKCategoryTypeIdentifierAppleStandHour:
+//            return NSLocalizedString("Hours Standing", comment: "HealthKit data type")
             
         case HKCharacteristicTypeIdentifierBloodType:
             return NSLocalizedString("Blood Type", comment: "HealthKit data type")
@@ -550,8 +619,8 @@ public extension HKSampleType {
         case HKCharacteristicTypeIdentifierBiologicalSex:
             return NSLocalizedString("Gender", comment: "HealthKit data type")
             
-        case HKCharacteristicTypeIdentifierFitzpatrickSkinType:
-            return NSLocalizedString("Skin Type", comment: "HealthKit data type")
+//        case HKCharacteristicTypeIdentifierFitzpatrickSkinType:
+//            return NSLocalizedString("Skin Type", comment: "HealthKit data type")
             
         case HKCorrelationTypeIdentifierBloodPressure:
             return NSLocalizedString("Blood Pressure", comment: "HealthKit data type")
@@ -610,8 +679,8 @@ public extension HKSampleType {
         case HKQuantityTypeIdentifierDietarySugar:
             return NSLocalizedString("Sugar", comment: "HealthKit data type")
             
-        case HKQuantityTypeIdentifierDietaryWater:
-            return NSLocalizedString("Water", comment: "HealthKit data type")
+//        case HKQuantityTypeIdentifierDietaryWater:
+//            return NSLocalizedString("Water", comment: "HealthKit data type")
             
         case HKQuantityTypeIdentifierDistanceWalkingRunning:
             return NSLocalizedString("Walking and Running Distance", comment: "HealthKit data type")
@@ -625,14 +694,14 @@ public extension HKSampleType {
         case HKQuantityTypeIdentifierStepCount:
             return NSLocalizedString("Step Count", comment: "HealthKit data type")
             
-        case HKQuantityTypeIdentifierUVExposure:
-            return NSLocalizedString("UV Exposure", comment: "HealthKit data type")
+//        case HKQuantityTypeIdentifierUVExposure:
+//            return NSLocalizedString("UV Exposure", comment: "HealthKit data type")
             
         case HKWorkoutTypeIdentifier:
             return NSLocalizedString("Workouts/Meals", comment: "HealthKit data type")
             
-        case HKQuantityTypeIdentifierBasalBodyTemperature:
-            return NSLocalizedString("Basal Body Temperature", comment: "HealthKit data type")
+//        case HKQuantityTypeIdentifierBasalBodyTemperature:
+//            return NSLocalizedString("Basal Body Temperature", comment: "HealthKit data type")
             
         case HKQuantityTypeIdentifierBloodAlcoholContent:
             return NSLocalizedString("Blood Alcohol", comment: "HealthKit data type")
@@ -765,6 +834,7 @@ public extension HKSampleType {
         }
     }
 }
+ */
 
 private let refDate  = NSDate(timeIntervalSinceReferenceDate: 0)
 private let noLimit  = Int(HKObjectQueryNoLimit)
@@ -1468,7 +1538,7 @@ let stEat = 1.0
 
 
 public class QueryHK: NSObject {
-
+    
     let healthKitStore: HKHealthStore = HKHealthStore()
     var heightHK:HKQuantitySample?
     var weightHK:HKQuantitySample?
@@ -1479,6 +1549,8 @@ public class QueryHK: NSObject {
     private override init() {
         super.init()
     }
+    var bmiHK:Double = 22.1
+    var HKBMIString:String = "24.0"
     
 /*    var proteinHK:HKQuantitySample
     var bmiHK:Double = 22.1
@@ -1627,6 +1699,15 @@ public class QueryHK: NSObject {
     
     public func updateBMI()
     {
+        if weightHK != nil && heightHK != nil {
+            let weightInKilograms = weightHK!.quantity.doubleValueForUnit(HKUnit.gramUnitWithMetricPrefix(.Kilo))
+            let heightInMeters = heightHK!.quantity.doubleValueForUnit(HKUnit.meterUnit())
+            bmiHK = calculateBMIWithWeightInKilograms(weightInKilograms, heightInMeters: heightInMeters)!
+        }
+        HKBMIString = String(format: "%.1f", bmiHK)
+    }
+    
+   /* {
        //  {
             let weightInKilograms = weightHK!.quantity.doubleValueForUnit(HKUnit.gramUnitWithMetricPrefix(.Kilo))
             let heightInMeters = heightHK!.quantity.doubleValueForUnit(HKUnit.meterUnit())
@@ -1634,7 +1715,7 @@ public class QueryHK: NSObject {
       //  }
         //            print("new bmi in IntroInterfaceController: \(bmiHK)")
 //        HKBMIString = String(format: "%.1f", bmiHK)
-    }
+    } */
     
     
     public func calculateBMIWithWeightInKilograms(weightInKilograms:Double, heightInMeters:Double) -> Double?
@@ -2106,7 +2187,7 @@ public class QueryHK: NSObject {
             let err = NSError(domain: HMErrorDomain, code: 1048576, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
             completion(samples: [], error: err)
         }
-    } */
+    }
     
     func fetchAggregatedSamplesOfType(sampleType: HKSampleType, aggregateUnit: NSCalendarUnit = .Day, predicate: NSPredicate? = nil,
                                              limit: Int = noLimit, sortDescriptors: [NSSortDescriptor]? = [dateAsc], completion: HMSampleBlock)
@@ -2138,7 +2219,7 @@ public class QueryHK: NSObject {
                 }; return agg as MCSample }
             completion(samples: byDay.sort({ (a,b) in return a.0 < b.0 }).map(doFinal), error: nil)
         }
-    }
+    }*/
     
     // Helper struct for iterating over date ranges.
     struct DateRange : SequenceType {
