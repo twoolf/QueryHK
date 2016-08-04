@@ -72,7 +72,7 @@ public class Log {
 }
 
 
-public enum CircadianEvent {
+/*  public enum CircadianEvent {
     case Meal
     case Fast
     case Sleep
@@ -835,6 +835,7 @@ public extension HKSample {
     }
 }
  */
+ */
 
 private let refDate  = NSDate(timeIntervalSinceReferenceDate: 0)
 private let noLimit  = Int(HKObjectQueryNoLimit)
@@ -1537,6 +1538,7 @@ let stFast = 0.66
 let stEat = 1.0
 
 
+@available(iOS 9.0, *)
 public class QueryHK: NSObject {
     
     let healthKitStore: HKHealthStore = HKHealthStore()
@@ -2266,3 +2268,4 @@ public class QueryHK: NSObject {
         }
     }
 }
+

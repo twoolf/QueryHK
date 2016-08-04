@@ -11,6 +11,8 @@ public enum CircadianEvent {
 /*
  * A protocol for unifying common metadata across HKSample and HKStatistic
  */
+
+@available(iOS 9.0, *)
 public protocol MCSample {
     var startDate    : NSDate        { get }
     var endDate      : NSDate        { get }
@@ -19,6 +21,8 @@ public protocol MCSample {
     var hkType       : HKSampleType? { get }
 }
 
+
+@available(iOS 9.0, *)
 public struct MCStatisticSample : MCSample {
     public var statistic    : HKStatistics
     public var numeralValue : Double?
@@ -54,6 +58,7 @@ public struct MCStatisticSample : MCSample {
  *
  * The increment operation provided within can only be applied to samples of a matching type.
  */
+@available(iOS 9.0, *)
 public struct MCAggregateSample : MCSample {
     public var startDate    : NSDate
     public var endDate      : NSDate
@@ -238,6 +243,8 @@ public struct MCAggregateSample : MCSample {
     }
 }
 
+
+@available(iOS 9.0, *)
 public extension MCAggregateSample {
     public class MCAggregateSampleCoding: NSObject, NSCoding {
         var aggregate: MCAggregateSample?
@@ -276,6 +283,7 @@ public extension MCAggregateSample {
     }
 }
 
+@available(iOS 9.0, *)
 public class MCAggregateArray: NSObject, NSCoding {
     public var aggregates : [MCAggregateSample]
 
@@ -379,6 +387,7 @@ public extension HKStatistics {
         }
     }
 
+    @available(iOS 9.0, *)
     public var numeralValue: Double? {
         guard defaultUnit != nil && quantity != nil else {
             return nil
@@ -386,8 +395,10 @@ public extension HKStatistics {
         return quantity!.doubleValueForUnit(defaultUnit!)
     }
 
+    @available(iOS 9.0, *)
     public var defaultUnit: HKUnit? { return quantityType.defaultUnit }
 
+    @available(iOS 9.0, *)
     public var hkType: HKSampleType? { return quantityType }
 }
 
@@ -397,6 +408,7 @@ public extension HKStatistics {
 
 extension HKSample: MCSample { }
 
+@available(iOS 9.0, *)
 public extension HKSampleType {
     public var defaultUnit: HKUnit? {
         let isMetric: Bool = NSLocale.currentLocale().objectForKey(NSLocaleUsesMetricSystem)!.boolValue
@@ -490,6 +502,7 @@ public extension HKSampleType {
     }
 }
 
+@available(iOS 9.0, *)
 public extension HKSample {
     public var numeralValue: Double? {
         guard defaultUnit != nil else {
@@ -533,6 +546,7 @@ public extension HKSample {
 }
 
 // Readable type description.
+@available(iOS 9.0, *)
 public extension HKSampleType {
     public var displayText: String? {
         switch identifier {
@@ -763,3 +777,4 @@ public extension HKSampleType {
         }
     }
 }
+
