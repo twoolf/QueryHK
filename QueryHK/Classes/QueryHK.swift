@@ -2,76 +2,7 @@ import HealthKit
 import Foundation
 import SwiftDate
 import AwesomeCache
-
-//import CocoaLumberjack
-
-public enum LoggerMessageType: Int {
-    case debug = 1
-    case verbose = 2
-    case info = 3
-    case warning = 4
-    case error = 5
-}
-
-extension LoggerMessageType: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case .verbose:
-            return "VERBOSE"
-        case .info:
-            return "INFO"
-        case .debug:
-            return "DEBUG"
-        case .warning:
-            return "WARNING"
-        case .error:
-            return "ERROR"
-        }
-    }
-}
-
-public protocol Logger {
-    
-    func log(_ type: LoggerMessageType, msg: String,
-               functionName: String, lineNum: Int, fileName: String )
-    
-}
-
-public class Log {
-    
-    public static var logger: Logger?
-    
-    
-    public static func verbose(_ msg: String, functionName: String = #function,
-                                 lineNum: Int = #line, fileName: String = #file ) {
-        logger?.log( .verbose, msg: msg,
-                     functionName: functionName, lineNum: lineNum, fileName: fileName)
-    }
-    
-    public class func info(_ msg: String, functionName: String = #function,
-                             lineNum: Int = #line, fileName: String = #file) {
-        logger?.log( .info, msg: msg,
-                     functionName: functionName, lineNum: lineNum, fileName: fileName)
-    }
-    
-    public class func warning(_ msg: String, functionName: String = #function,
-                                lineNum: Int = #line, fileName: String = #file) {
-        logger?.log( .warning, msg: msg,
-                     functionName: functionName, lineNum: lineNum, fileName: fileName)
-    }
-    
-    public class func error(_ msg: String, functionName: String = #function,
-                              lineNum: Int = #line, fileName: String = #file) {
-        logger?.log( .error, msg: msg,
-                     functionName: functionName, lineNum: lineNum, fileName: fileName)
-    }
-    
-    public class func debug(_ msg: String, functionName: String = #function,
-                              lineNum: Int = #line, fileName: String = #file) {
-        logger?.log( .debug, msg: msg,
-                     functionName: functionName, lineNum: lineNum, fileName: fileName)
-    }
-}
+import SwiftyBeaver
 
 private let refDate  = NSDate(timeIntervalSinceReferenceDate: 0)
 //private let noLimit  = Int(HKObjectQueryNoLimit)
@@ -237,7 +168,7 @@ public class QueryHK: NSObject {
                 // Set the results handler
                 query.initialResultsHandler = { query, results, error in
                     guard error == nil else {
-                        Log.error("Failed to fetch \(sampleType) statistics: \(error!)")
+                        log.error("Failed to fetch \(sampleType) statistics: \(error!)")
                         completion(aggregates: .None, error: error)
                         return
                     }
@@ -336,14 +267,14 @@ public class QueryHK: NSObject {
                         failure(error)
                         return
                     }
-                    Log.verbose("Caching minmax aggregates for \(key) ")
+                    log.verbose("Caching minmax aggregates for \(key) ")
                     success(MCAggregateArray(aggregates: aggregates), .Date(self.getCacheExpiry(period)))
                 }
             }
             }, completion: {object, isLoadedFromCache, error in
-                Log.verbose("Cache minmax result \(key) \(isLoadedFromCache)")
+                log.verbose("Cache minmax result \(key) \(isLoadedFromCache)")
                 if let aggArray = object {
-                    Log.verbose("Cache minmax result \(key) size \(aggArray.aggregates.count)")
+                    log.verbose("Cache minmax result \(key) size \(aggArray.aggregates.count)")
                     completion(aggArray.aggregates.map { finalize(.DiscreteMin, $0) }, aggArray.aggregates.map { finalize(.DiscreteMax, $0) }, error)
                 } else {
                     completion([], [], error)
@@ -534,7 +465,7 @@ public class QueryHK: NSObject {
                     }
                     
                 default:
-                    Log.error("Unexpected type \(ty.identifier) while fetching circadian event intervals")
+                    log.error("Unexpected type \(ty.identifier) while fetching circadian event intervals")
                     return nil
                 }
             }
@@ -774,23 +705,23 @@ public class QueryHK: NSObject {
                         failure(error)
                         return
                     }
-                    Log.verbose("Caching sample collection days for \(key)")
+                    log.verbose("Caching sample collection days for \(key)")
                     let agg = self.aggregateSamplesManually(proxyType, aggOp: aggOp, samples: samples)
-                    Log.info("Finished SCQ for \(key) \(NSDate().timeIntervalSinceDate(queryStartTime!))")
+                    log.info("Finished SCQ for \(key) \(NSDate().timeIntervalSinceDate(queryStartTime!))")
                     success(MCAggregateArray(aggregates: [agg]), .Date(self.getCacheExpiry(period)))
                 }
                 
-                Log.info("Starting SCQ for \(key)")
+                log.info("Starting SCQ for \(key)")
                 queryStartTime = NSDate()
                 
                 self.fetchAggregatesOfType(proxyType, predicate: predicate, aggUnit: .Day, aggOp: aggOp) {
                     self.queryResultAsSamples($0, error: $1) { doCache($0, $1) }
                 }
                 }, completion: {object, isLoadedFromCache, error in
-                    Log.verbose("Cache sample collection days result \(key) \(isLoadedFromCache)")
+                    log.verbose("Cache sample collection days result \(key) \(isLoadedFromCache)")
                     
                     guard error == nil else {
-                        Log.error(error as! String)
+                        log.error(error as! String)
                         someError = error
                         results.updateValue(0, forKey: sampleType)
                         dispatch_group_leave(group)
@@ -798,16 +729,16 @@ public class QueryHK: NSObject {
                     }
                     
                     if let aggArray = object {
-                        Log.verbose("Cache sample collection days result \(key) size \(aggArray.aggregates.count)")
+                        log.verbose("Cache sample collection days result \(key) size \(aggArray.aggregates.count)")
                         if aggArray.aggregates.count > 0 {
                             results.updateValue(aggArray.aggregates[0].count(), forKey: sampleType)
                         } else {
-                            Log.info("No aggregates found for collection days")
+                            log.info("No aggregates found for collection days")
                             results.updateValue(0, forKey: sampleType)
                         }
                         dispatch_group_leave(group)
                     } else {
-                        Log.info("No aggregate array found for collection days")
+                        log.info("No aggregate array found for collection days")
                         results.updateValue(0, forKey: sampleType)
                         dispatch_group_leave(group)
                     }
@@ -907,10 +838,10 @@ public class QueryHK: NSObject {
     public func fetchWeeklyFastingVariability(startDate: NSDate = 1.years.ago, endDate: NSDate = NSDate(),
                                               completion: (variability: Double, error: NSError?) -> Void)
     {
-        Log.info("Starting WFV query")
+        log.info("Starting WFV query")
         let queryStartTime = NSDate()
         fetchFastingVariability(startDate, endDate: endDate, aggUnit: .WeekOfYear) {
-            Log.info("Finished WFV query \(NSDate().timeIntervalSinceDate(queryStartTime))")
+            log.info("Finished WFV query \(NSDate().timeIntervalSinceDate(queryStartTime))")
             completion(variability: $0, error: $1)
         }
     }
@@ -918,10 +849,10 @@ public class QueryHK: NSObject {
     public func fetchDailyFastingVariability(startDate: NSDate = 1.months.ago, endDate: NSDate = NSDate(),
                                              completion: (variability: Double, error: NSError?) -> Void)
     {
-        Log.info("Starting DFV query")
+        log.info("Starting DFV query")
         let queryStartTime = NSDate()
         fetchFastingVariability(startDate, endDate: endDate, aggUnit: .Day) {
-            Log.info("Finished DFV query \(NSDate().timeIntervalSinceDate(queryStartTime))")
+            log.info("Finished DFV query \(NSDate().timeIntervalSinceDate(queryStartTime))")
             completion(variability: $0, error: $1)
         }
     }
@@ -938,10 +869,10 @@ public class QueryHK: NSObject {
             }
         }
         
-        Log.info("Starting WF STATE query")
+        log.info("Starting WF STATE query")
         let queryStartTime = NSDate()
         fetchCircadianDurationsByGroup(1.weeks.ago, endDate: NSDate(), groupBy: group) { (categories, error) in
-            Log.info("Finished WF STATE query \(NSDate().timeIntervalSinceDate(queryStartTime))")
+            log.info("Finished WF STATE query \(NSDate().timeIntervalSinceDate(queryStartTime))")
             guard error == nil else {
                 completion(fast: 0.0, nonFast: 0.0, error: error)
                 return
@@ -972,10 +903,10 @@ public class QueryHK: NSObject {
             }
         }
         
-        Log.info("Starting WF TYPE query")
+        log.info("Starting WF TYPE query")
         let queryStartTime = NSDate()
         fetchCircadianDurationsByGroup(1.weeks.ago, endDate: NSDate(), predicate: predicate, groupBy: group) { (categories, error) in
-            Log.info("Finished WF TYPE query \(NSDate().timeIntervalSinceDate(queryStartTime))")
+            log.info("Finished WF TYPE query \(NSDate().timeIntervalSinceDate(queryStartTime))")
             guard error == nil else {
                 completion(fastSleep: 0.0, fastAwake: 0.0, error: error)
                 return
@@ -1007,10 +938,10 @@ public class QueryHK: NSObject {
             }
         }
         
-        Log.info("Starting WEE query")
+        log.info("Starting WEE query")
         let queryStartTime = NSDate()
         fetchCircadianDurationsByGroup(1.weeks.ago, endDate: NSDate(), predicate: predicate, groupBy: group) { (categories, error) in
-            Log.info("Finished WEE query \(NSDate().timeIntervalSinceDate(queryStartTime))")
+            log.info("Finished WEE query \(NSDate().timeIntervalSinceDate(queryStartTime))")
             guard error == nil else {
                 completion(eatingTime: 0.0, exerciseTime: 0.0, error: error)
                 return
@@ -1113,14 +1044,14 @@ public class QueryHK: NSObject {
                         failure(error)
                         return
                     }
-                    Log.verbose("Caching aggregates for \(key)")
+                    log.verbose("Caching aggregates for \(key)")
                     success(MCAggregateArray(aggregates: aggregates), .Date(self.getCacheExpiry(period)))
                 }
             }
             }, completion: {object, isLoadedFromCache, error in
-                Log.verbose("Cache result \(key) \(isLoadedFromCache)")
+                log.verbose("Cache result \(key) \(isLoadedFromCache)")
                 if let aggArray = object {
-                    Log.verbose("Cache result \(key) size \(aggArray.aggregates.count)")
+                    log.verbose("Cache result \(key) size \(aggArray.aggregates.count)")
                     self.queryResultAsSamples(.AggregatedSamples(aggArray.aggregates), error: error, completion: completion)
                 } else {
                     completion(samples: [], error: error)
@@ -1237,7 +1168,7 @@ public class QueryHK: NSObject {
                     failure(error)
                     return
                 }
-                Log.verbose("Caching daily aggregates for \(key)")
+                log.verbose("Caching daily aggregates for \(key)")
                 success(MCAggregateArray(aggregates: aggregates), .Date(self.getCacheExpiry(period)))
             }
             
@@ -1253,9 +1184,9 @@ public class QueryHK: NSObject {
                 }
             }
             }, completion: {object, isLoadedFromCache, error in
-                Log.verbose("Cache daily result \(key) \(isLoadedFromCache)")
+                log.verbose("Cache daily result \(key) \(isLoadedFromCache)")
                 if let aggArray = object {
-                    Log.verbose("Cache daily result \(key) size \(aggArray.aggregates.count)")
+                    log.verbose("Cache daily result \(key) size \(aggArray.aggregates.count)")
                     self.queryResultAsSamples(.AggregatedSamples(aggArray.aggregates), error: error, completion: completion)
                 } else {
                     completion(samples: [], error: error)
@@ -1356,7 +1287,7 @@ public class QueryHK: NSObject {
                 
                 if( error != nil )
                 {
-                    Log.error("Error reading height from HealthKit Store: \(error.localizedDescription)")
+                    log.error("Error reading height from HealthKit Store: \(error.localizedDescription)")
                     return;
                 }
                 
