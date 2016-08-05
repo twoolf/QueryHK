@@ -1,5 +1,6 @@
 import Foundation
 import HealthKit
+import AwesomeCache
 
 public enum CircadianEvent {
     case Meal
@@ -777,4 +778,3 @@ public extension HKSampleType {
         }
     }
 }
-
